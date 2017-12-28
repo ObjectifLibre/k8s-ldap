@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: loginapp
+  namespace: auth
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: loginapp
+    spec:
+      containers:
+      - image: objectiflibre/login-app:latest
+        name: loginapp
+        ports:
+        - name: http
+          containerPort: 5555
+        volumeMounts:
+        - name: ca
+          mountPath: /etc/ssl/
+        - name: config
+          mountPath: /app/
+      volumes:
+      - name: ca
+        configMap:
+          name: ca
+          items:
+          - key: ca.pem
+            path: ca.pem
+      - name: config
+        configMap:
+          name: loginapp
+          items:
+          - key: config.yaml
+            path: config.yaml
