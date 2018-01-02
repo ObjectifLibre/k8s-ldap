@@ -31,13 +31,13 @@ This deployment follows Dex by CoreOS & Kubernetes Documentations:
     * **--oidc-username-claim=name**: Map to **nameAttr** Dex configuration. This will be used by Kubernetes RBAC to authorize users based on their name.
     * **oidc-groups-claim=groups**: This will be used by Kubernetes RBAC to authorize users based on their groups.
   * Ingress Controller available.
-  * Letsencrypt automatically request certificates for Kubernetes (ex: https://github.com/jetstack/kube-lego/)
+  * Automatic Letsencrypt certificate requests for Kubernetes (ex: https://github.com/jetstack/kube-lego/)
 
-* An available LDAP
+* An available LDAP server
 
 ## Login application
 
-* Create auth namespace:
+* Create the auth namespace:
 
 ```shell
 kubectl create ns auth
@@ -81,7 +81,7 @@ kubectl create -f dex-ing-svc.yml
 kubectl create -f dex-deploy.yml
 ```
 
-From now it should work, try https://login.k8s.example.org, login and retrieve k8s configuration.
+Now it should work: try https://login.k8s.example.org, login and retrieve k8s configuration.
 
 ```shell
 kubectl --user=janedoe get po
