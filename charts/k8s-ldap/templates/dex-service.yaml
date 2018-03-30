@@ -1,0 +1,21 @@
+{{- if .Values.dex.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.dex.name }}
+  name: {{ template "k8s-ldap.dex.fullname" . }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.dex.port }}
+    protocol: TCP
+    targetPort: {{ .Values.dex.port }}
+  selector:
+    app: {{ template "k8s-ldap.name" . }}
+    component: {{ .Values.dex.name }}
+{{- end -}}

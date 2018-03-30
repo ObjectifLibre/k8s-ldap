@@ -1,0 +1,6 @@
+{{- if .Values.loginapp.ingress.enabled }}
+Login application URL accessible at :
+{{- range .Values.loginapp.ingress.hosts }}
+  http{{ if $.Values.loginapp.ingress.tls }}s{{ end }}://{{ . }}
+{{- end -}}
+{{- end -}}

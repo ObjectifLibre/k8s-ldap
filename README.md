@@ -35,6 +35,10 @@ This deployment follows Dex by CoreOS & Kubernetes Documentations:
 
 * An available LDAP server
 
+## Helm chart
+
+Helm chart is available [here](./charts/k8s-ldap).
+
 ## Login application
 
 * Create the auth namespace:

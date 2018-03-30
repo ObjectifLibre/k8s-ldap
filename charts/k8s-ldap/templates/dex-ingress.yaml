@@ -1,0 +1,34 @@
+{{- if .Values.dex.enabled -}}
+{{- if .Values.dex.ingress.enabled -}}
+{{- $serviceName := include "k8s-ldap.dex.fullname" . }}
+{{- $servicePort := .Values.dex.servicePort -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.dex.name }}
+  name: {{ template "k8s-ldap.dex.fullname" . }}
+{{- if .Values.dex.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.dex.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+  rules:
+    {{- range .Values.dex.ingress.hosts }}
+    - host: {{ . }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+    {{- end -}}
+{{- if .Values.dex.ingress.tls }}
+  tls:
+{{ toYaml .Values.dex.ingress.tls | indent 4 }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}

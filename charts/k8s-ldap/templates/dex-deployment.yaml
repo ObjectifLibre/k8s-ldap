@@ -1,0 +1,76 @@
+{{- if .Values.dex.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.dex.name }}
+  name: {{ template "k8s-ldap.dex.fullname" . }}
+spec:
+  replicas: {{ .Values.dex.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "k8s-ldap.name" . }}
+      component: {{ .Values.dex.name }}
+  template:
+    metadata:
+    {{- if .Values.dex.podAnnotations }}
+      annotations:
+{{ toYaml .Values.dex.podAnnotations | indent 8 }}
+    {{- end }}
+      labels:
+        app: {{ template "k8s-ldap.name" . }}
+        component: {{ .Values.dex.name }}
+    spec:
+      serviceAccountName: {{ if .Values.dex.rbac.create }}{{ template "k8s-ldap.dex.fullname" . }}{{ else }}"{{ .Values.dex.serviceAccountName }}"{{ end }}
+      containers:
+      - image: {{ .Values.dex.image.repository }}:{{ .Values.dex.image.tag }}
+        imagePullPolicy: {{ .Values.dex.image.pullPolicy }}
+        name: {{ template "k8s-ldap.name" . }}-{{ .Values.dex.name }}
+        command: ["dex", "serve", "/etc/dex/cfg/config.yaml"]
+        ports:
+        - name: http
+          containerPort: {{ .Values.dex.port }}
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dex/cfg
+      {{- if .Values.dex.resources }}
+        resources:
+{{ toYaml .Values.dex.resources | indent 8 }}
+      {{- end }}
+        readinessProbe:
+          httpGet:
+            path: /dex/healthz
+            port: {{ .Values.dex.port }}
+          timeoutSeconds: 5
+          periodSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /dex/healthz
+            port: {{ .Values.dex.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "k8s-ldap.dex.fullname" . }}
+          items:
+          - key: config.yaml
+            path: config.yaml
+    {{- if .Values.dex.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.dex.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.dex.tolerations }}
+      tolerations:
+{{ toYaml .Values.dex.tolerations | indent 8 }}
+    {{- end }}
+    {{- if .Values.dex.affinity }}
+      affinity:
+{{ toYaml .Values.dex.affinity | indent 8 }}
+    {{- end -}}
+{{- end -}}

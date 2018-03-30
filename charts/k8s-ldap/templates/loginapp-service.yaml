@@ -1,0 +1,21 @@
+{{- if .Values.loginapp.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.loginapp.name }}
+  name: {{ template "k8s-ldap.loginapp.fullname" . }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.loginapp.servicePort }}
+    protocol: TCP
+    targetPort: {{ .Values.loginapp.port }}
+  selector:
+    app: {{ template "k8s-ldap.name" . }}
+    component: {{ .Values.loginapp.name }}
+{{- end -}}

@@ -1,0 +1,15 @@
+{{- if .Values.loginapp.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.loginapp.name }}
+  name: {{ template "k8s-ldap.loginapp.fullname" . }}
+data:
+  config.yaml: |
+{{ toYaml .Values.loginapp.config | indent 4 }}
+{{- end -}}

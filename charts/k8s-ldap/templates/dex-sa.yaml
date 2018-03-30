@@ -1,0 +1,14 @@
+{{- if .Values.dex.enabled -}}
+{{- if .Values.dex.rbac.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.dex.name }}
+  name: {{ template "k8s-ldap.dex.fullname" . }}
+{{- end -}}
+{{- end -}}

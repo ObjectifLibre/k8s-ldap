@@ -1,0 +1,227 @@
+##############
+### Common ###
+##############
+# fullnameOverride:
+# nameOverride:
+
+###########
+### Dex ###
+###########
+dex:
+  enabled: true
+  name: dex
+
+  # Image
+  image:
+    repository: quay.io/coreos/dex
+    tag: v2.9.0
+    pullPolicy: IfNotPresent
+
+  # Deployment settings
+  replicas: 2
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  port: 8080
+  servicePort: 8080
+
+  # Ingress
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: 'true'
+    hosts:
+      - dex.example.local
+    tls: []
+    #  - secretName: dex-example-tls
+    #    hosts:
+    #      - dex.example.local
+  
+  # RBAC
+  rbac:
+    create: true
+  # Uncomment if rbac.create is false
+  # serviceAccountName:
+
+  # Dex configuration
+  config:
+    issuer: https://dex.k8s.example.org/dex
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+    web:
+      # Be careful this should be equals to dex.port
+      http: 0.0.0.0:8080
+    logger:
+      level: "debug"
+      format: json
+
+    connectors:
+      - type: ldap
+        # Required field for connector id.
+        id: ldap
+        # Required field for connector name.
+        name: LDAP
+        config:
+          # Host and optional port of the LDAP server in the form "host:port".
+          # If the port is not supplied, it will be guessed based on "insecureNoSSL",
+          # and "startTLS" flags. 389 for insecure or StartTLS connections, 636
+          # otherwise.
+          host: ldap.k8s.example.org:1389
+
+          # Following field is required if the LDAP host is not using TLS (port 389).
+          # Because this option inherently leaks passwords to anyone on the same network
+          # as dex, THIS OPTION MAY BE REMOVED WITHOUT WARNING IN A FUTURE RELEASE.
+          #
+          insecureNoSSL: true
+          # If a custom certificate isn't provide, this option can be used to turn on
+          # TLS certificate checks. As noted, it is insecure and shouldn't be used outside
+          # of explorative phases.
+          #
+          insecureSkipVerify: true
+          # When connecting to the server, connect using the ldap:// protocol then issue
+          # a StartTLS command. If unspecified, connections will use the ldaps:// protocol
+          #
+          # startTLS: true
+          # Path to a trusted root certificate file. Default: use the host's root CA.
+          #rootCA: /etc/dex/ldap.ca
+          # A raw certificate file can also be provided inline.
+          #rootCAData:
+          # The DN and password for an application service account. The connector uses
+          # these credentials to search for users and groups. Not required if the LDAP
+          # server provides access for anonymous auth.
+          # Please note that if the bind password contains a `$`, it has to be saved in an
+          # environment variable which should be given as the value to `bindPW`.
+          bindDN: cn=admin,dc=example,dc=org
+          bindPW: admin
+
+          # User search maps a username and password entered by a user to a LDAP entry.
+          userSearch:
+            # BaseDN to start the search from. It will translate to the query
+            # "(&(objectClass=person)(uid=<username>))".
+            baseDN: ou=People,dc=example,dc=org
+            # Optional filter to apply when searching the directory.
+            filter: "(objectClass=posixAccount)"
+            # username attribute used for comparing user entries. This will be translated
+            # and combine with the other filter as "(<attr>=<username>)".
+            username: mail
+            # The following three fields are direct mappings of attributes on the user entry.
+            # String representation of the user.
+            idAttr: uid
+            # Required. Attribute to map to Email.
+            emailAttr: mail
+            # Maps to display name of users. No default value.
+            nameAttr: uid
+
+          # Group search queries for groups given a user entry.
+          groupSearch:
+            # BaseDN to start the search from. It will translate to the query
+            # "(&(objectClass=group)(member=<user uid>))".
+            baseDN: ou=Groups,dc=example,dc=org
+            # Optional filter to apply when searching the directory.
+            filter: "(objectClass=posixGroup)"
+            # Following two fields are used to match a user to a group. It adds an additional
+            # requirement to the filter that an attribute in the group must match the user's
+            # attribute value.
+            userAttr: uid
+            groupAttr: memberUid
+            # Represents group name.
+            nameAttr: cn
+    oauth2:
+      skipApprovalScreen: true
+
+    staticClients:
+    - id: login
+      redirectURIs:
+      - 'https://login.k8s.example.org/callback'
+      name: 'Login Application'
+      secret: 4TORGiNV9M54BTk1v7dNuFSaI6hUjfjr
+
+################
+### Loginapp ###
+################
+loginapp:
+  enabled: true
+  name: loginapp
+
+  # Image
+  image:
+    repository: objectiflibre/login-app
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  # Deployment settings
+  replicas: 2
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  port: 8080
+  servicePort: 8080
+
+  # Ingress
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: 'true'
+    hosts:
+      - loginapp.example.local
+    tls: []
+    #  - secretName: loginapp-example-tls
+    #    hosts:
+    #      - loginapp.example.local
+
+  # Loginapp configuration
+  config:
+    debug: false
+    client_id: "login"
+    client_secret: 4TORGiNV9M54BTk1v7dNuFSaI6hUjfjr
+    issuer_url: "https://dex.k8s.example.org/dex"
+    issuer_root_ca: "/etc/ssl/ca.pem"
+    redirect_url: "https://login.k8s.example.org/callback"
+    listen: "http://0.0.0.0:8080"
+    disable_choices: false
+    extra_scopes: "groups"
+    app_name: "Kubernetes Auth"
+
+  # Example: Letsencrypt CA
+  issuerCA: |
+    -----BEGIN CERTIFICATE-----
+    MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/
+    MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT
+    DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow
+    PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD
+    Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+    AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O
+    rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq
+    OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b
+    xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw
+    7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD
+    aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV
+    HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG
+    SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69
+    ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr
+    AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz
+    R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5
+    JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo
+    Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
+    -----END CERTIFICATE-----
+
