@@ -31,7 +31,7 @@ This deployment follows Dex by CoreOS & Kubernetes Documentations:
     * **--oidc-username-claim=name**: Map to **nameAttr** Dex configuration. This will be used by Kubernetes RBAC to authorize users based on their name.
     * **oidc-groups-claim=groups**: This will be used by Kubernetes RBAC to authorize users based on their groups.
   * Ingress Controller available.
-  * Automatic Letsencrypt certificate requests for Kubernetes (ex: https://github.com/jetstack/kube-lego/)
+  * Automatic certificate requests for Kubernetes (ex: https://github.com/jetstack/cert-manager)
 
 * An available LDAP server
 
