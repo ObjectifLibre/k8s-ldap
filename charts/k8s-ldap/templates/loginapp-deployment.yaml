@@ -29,7 +29,7 @@ spec:
       - image: {{ .Values.loginapp.image.repository }}:{{ .Values.loginapp.image.tag }}
         imagePullPolicy: {{ .Values.loginapp.image.pullPolicy }}
         name: {{ template "k8s-ldap.name" . }}-{{ .Values.loginapp.name }}
-        command: ["/login-app", "/app/config.yaml"]
+        command: ["/loginapp", "/app/config.yaml"]
         ports:
         - name: http
           containerPort: {{ .Values.loginapp.port }}

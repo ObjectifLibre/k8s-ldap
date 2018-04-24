@@ -156,8 +156,8 @@ loginapp:
 
   # Image
   image:
-    repository: objectiflibre/login-app
-    tag: latest
+    repository: quay.io/fydrah/loginapp
+    tag: 1.1.1
     pullPolicy: IfNotPresent
 
   # Deployment settings
