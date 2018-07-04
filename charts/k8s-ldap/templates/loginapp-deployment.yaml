@@ -17,8 +17,9 @@ spec:
       component: {{ .Values.loginapp.name }}
   template:
     metadata:
-    {{- if .Values.loginapp.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/loginapp-cm.yaml") . | sha256sum }}
+    {{- if .Values.loginapp.podAnnotations }}
 {{ toYaml .Values.loginapp.podAnnotations | indent 8 }}
     {{- end }}
       labels:

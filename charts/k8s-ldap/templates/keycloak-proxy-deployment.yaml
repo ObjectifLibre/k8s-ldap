@@ -1,0 +1,86 @@
+{{- if .Values.keycloakProxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.keycloakProxy.name }}
+  name: {{ template "k8s-ldap.keycloakProxy.fullname" . }}
+spec:
+  replicas: {{ .Values.keycloakProxy.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "k8s-ldap.name" . }}
+      component: {{ .Values.keycloakProxy.name }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/keycloak-proxy-cm.yaml") . | sha256sum }}
+    {{- if .Values.keycloakProxy.podAnnotations }}
+{{ toYaml .Values.keycloakProxy.podAnnotations | indent 8 }}
+    {{- end }}
+      labels:
+        app: {{ template "k8s-ldap.name" . }}
+        component: {{ .Values.keycloakProxy.name }}
+    spec:
+      containers:
+      - image: {{ .Values.keycloakProxy.image.repository }}:{{ .Values.keycloakProxy.image.tag }}
+        imagePullPolicy: {{ .Values.keycloakProxy.image.pullPolicy }}
+        name: {{ template "k8s-ldap.name" . }}-{{ .Values.keycloakProxy.name }}
+        args:
+        - "--config=/app/config.yaml"
+        - "--skip-openid-provider-tls-verify"
+        ports:
+        - name: http
+          containerPort: {{ .Values.keycloakProxy.port }}
+        volumeMounts:
+        - name: config
+          mountPath: /app/
+        - name: ca
+          mountPath: /etc/ssl/
+      {{- if .Values.keycloakProxy.resources }}
+        resources:
+{{ toYaml .Values.keycloakProxy.resources | indent 8 }}
+      {{- end }}
+        #readinessProbe:
+        #  httpGet:
+        #    path: /keycloakProxy/healthz
+        #    port: {{ .Values.keycloakProxy.port }}
+        #  timeoutSeconds: 5
+        #  periodSeconds: 5
+        #  failureThreshold: 5
+        #livenessProbe:
+        #  httpGet:
+        #    path: /keycloakProxy/healthz
+        #    port: {{ .Values.keycloakProxy.port }}
+        #  initialDelaySeconds: 30
+        #  periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "k8s-ldap.keycloakProxy.fullname" . }}
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: ca
+        configMap:
+          name: {{ .Release.Name }}-ca
+          items:
+          - key: ca.pem
+            path: ca.pem
+    {{- if .Values.keycloakProxy.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.keycloakProxy.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.keycloakProxy.tolerations }}
+      tolerations:
+{{ toYaml .Values.keycloakProxy.tolerations | indent 8 }}
+    {{- end }}
+    {{- if .Values.keycloakProxy.affinity }}
+      affinity:
+{{ toYaml .Values.keycloakProxy.affinity | indent 8 }}
+    {{- end -}}
+{{- end -}}

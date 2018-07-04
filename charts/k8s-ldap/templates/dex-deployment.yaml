@@ -17,8 +17,9 @@ spec:
       component: {{ .Values.dex.name }}
   template:
     metadata:
-    {{- if .Values.dex.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/dex-cm.yaml") . | sha256sum }}
+    {{- if .Values.dex.podAnnotations }}
 {{ toYaml .Values.dex.podAnnotations | indent 8 }}
     {{- end }}
       labels:

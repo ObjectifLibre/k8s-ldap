@@ -1,0 +1,21 @@
+{{- if .Values.keycloakProxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.keycloakProxy.name }}
+  name: {{ template "k8s-ldap.keycloakProxy.fullname" . }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.keycloakProxy.servicePort }}
+    protocol: TCP
+    targetPort: {{ .Values.keycloakProxy.port }}
+  selector:
+    app: {{ template "k8s-ldap.name" . }}
+    component: {{ .Values.keycloakProxy.name }}
+{{- end -}}

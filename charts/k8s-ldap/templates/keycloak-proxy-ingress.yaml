@@ -1,0 +1,34 @@
+{{- if .Values.keycloakProxy.enabled -}}
+{{- if .Values.keycloakProxy.ingress.enabled -}}
+{{- $serviceName := include "k8s-ldap.keycloakProxy.fullname" . }}
+{{- $servicePort := .Values.keycloakProxy.servicePort -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.keycloakProxy.name }}
+  name: {{ template "k8s-ldap.keycloakProxy.fullname" . }}
+{{- if .Values.keycloakProxy.ingress.annotations }}
+  annotations:
+{{ toYaml .Values.keycloakProxy.ingress.annotations | indent 4 }}
+{{- end }}
+spec:
+  rules:
+    {{- range .Values.keycloakProxy.ingress.hosts }}
+    - host: {{ . }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+    {{- end -}}
+{{- if .Values.keycloakProxy.ingress.tls }}
+  tls:
+{{ toYaml .Values.keycloakProxy.ingress.tls | indent 4 }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}

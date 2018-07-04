@@ -1,0 +1,15 @@
+{{- if .Values.keycloakProxy.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ template "k8s-ldap.name" . }}
+    chart: {{ template "k8s-ldap.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ .Values.keycloakProxy.name }}
+  name: {{ template "k8s-ldap.keycloakProxy.fullname" . }}
+data:
+  config.yaml: |
+{{ toYaml .Values.keycloakProxy.config | indent 4 }}
+{{- end -}}
