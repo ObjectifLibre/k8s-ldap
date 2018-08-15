@@ -53,9 +53,19 @@ dex:
   # serviceAccountName:
 
   # Dex configuration
+  # See https://github.com/coreos/dex/tree/master/Documentation
   config:
     issuer: https://dex.k8s.example.org/dex
     storage:
+      # Kubernetes storage by default, Dex will create CRD on first launch:
+      # * authcodes.dex.coreos.com
+      # * authrequests.dex.coreos.com
+      # * connectors.dex.coreos.com
+      # * oauth2clients.dex.coreos.com
+      # * offlinesessionses.dex.coreos.com
+      # * passwords.dex.coreos.com
+      # * refreshtokens.dex.coreos.com
+      # * signingkeies.dex.coreos.com
       type: kubernetes
       config:
         inCluster: true
@@ -140,12 +150,26 @@ dex:
     oauth2:
       skipApprovalScreen: true
 
+    # Configure static clients.
+    # Warning: ID fields must match client-id field on
+    # your kubernetes API server configuration
+    # Use trusted peers feature if more than one
+    # app should be used by kubernetes.
     staticClients:
-    - id: login
+    - id: cli
       redirectURIs:
       - 'https://login.k8s.example.org/callback'
       name: 'Login Application'
       secret: 4TORGiNV9M54BTk1v7dNuFSaI6hUjfjr
+    # If keycloak is enabled, uncomment and complete
+    # following lines:
+    #- id: login
+    #  redirectURIs:
+    #  - 'https://dashboard.fhardy.fr/oauth/callback'
+    #  name: 'Dashboard Application'
+    #  secret: iCeiqu5phogh3Eesh5iPu3gaph9eexo6
+    #  trustedPeers:
+    #  - cli
 
 ################
 ### Loginapp ###
@@ -157,7 +181,7 @@ loginapp:
   # Image
   image:
     repository: quay.io/fydrah/loginapp
-    tag: 1.1.1
+    tag: 2.1.0
     pullPolicy: IfNotPresent
 
   # Deployment settings
@@ -190,17 +214,8 @@ loginapp:
     #      - loginapp.example.local
 
   # Loginapp configuration
-  config:
-    debug: false
-    client_id: "login"
-    client_secret: 4TORGiNV9M54BTk1v7dNuFSaI6hUjfjr
-    issuer_url: "https://dex.k8s.example.org/dex"
-    issuer_root_ca: "/etc/ssl/ca.pem"
-    redirect_url: "https://login.k8s.example.org/callback"
-    listen: "http://0.0.0.0:8080"
-    disable_choices: false
-    extra_scopes: "groups"
-    app_name: "Kubernetes Auth"
+  # see: https://github.com/fydrah/loginapp#configuration
+  config: {}
 
   # Example: Letsencrypt CA
   issuerCA: |
@@ -267,14 +282,17 @@ keycloakProxy:
     #    hosts:
     #      - loginapp.example.local
 
-  # Loginapp configuration
+  # Keycloak-proxy configuration
+  # See https://github.com/gambol99/keycloak-proxy#configuration
   config:
-    client-id: <CLIENT_ID>
-    client-secret: <CLIENT_SECRET>
+    client-id: CLIENT_ID
+    client-secret: CLIENT_SECRET
     listen: ":8080"
     enable-refresh-tokens: true
     discovery-url: https://dex.example.org/dex/.well-known/openid-configuration
     encryption-key: 0626a8d4c2544b141e629a9abf6c5db378b0e353
+    # By default, insecure communication between
+    # keycloak proxy and k8s dashboard (in-cluster communication)
     upstream-url: http://kubernetes-dashboard.kube-system:80
     scopes: []
     resources: []
