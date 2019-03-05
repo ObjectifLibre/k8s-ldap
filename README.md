@@ -1,12 +1,13 @@
 # Kubernetes - LDAP authentication with Dex
 
-* [Docs](#docs)
-* [Requirements](#requirements)
-* [Login application](#login-application)
-* [Dex](#dex)
-  * [CRD](#crd)
-  * [Deployment](#deployment)
-* [Test](#test)
+- [Kubernetes - LDAP authentication with Dex](#kubernetes---ldap-authentication-with-dex)
+  - [Docs](#docs)
+  - [Requirements](#requirements)
+  - [Helm chart](#helm-chart)
+  - [Login application](#login-application)
+  - [Dex](#dex)
+    - [CRD](#crd)
+    - [Deployment](#deployment)
 
 ## Docs
 
@@ -88,22 +89,21 @@ kubectl create -f dex-deploy.yml
 Now it should work: try https://login.k8s.example.org, login and retrieve k8s configuration.
 
 ```shell
-kubectl --user=janedoe get po
-Error from server (Forbidden): pods is forbidden: User "https://dex.k8s.example.org/dex#janedoe" cannot list pods in the namespace "auth"
+kubectl --token=token get pods -n auth
+Error from server (Forbidden): pods is forbidden: User "<oidc-issuer-url>#<name>" cannot list pods in the namespace "auth"
 ```
 
 User prefix can be updated with the **--oidc-username-prefix** apiserver option.
 
-* Create RBAC resource:
-
+* Create ClusterRoleBinding resource:
 ```shell
-kubectl create -f rbac-admins.yml
+kubectl create -f crb-all-auth.yml
 ```
 
 Try again:
 
 ```shell
-kubectl --user=janedoe get po
+kubectl --token=$token get po
 NAME                        READY     STATUS    RESTARTS   AGE
 dex-6f6568d499-m89z6        1/1       Running   0          7m
 loginapp-6474748f4b-gb5kb   1/1       Running   0          8m
