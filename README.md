@@ -38,7 +38,7 @@ This deployment follows Dex by CoreOS & Kubernetes Documentations:
 
 ## Helm chart
 
-Helm chart is available [here](./charts/k8s-ldap).
+Helm chart is available [here](https://github.com/ObjectifLibre/kube-oidc).
 
 ## Login application
 
