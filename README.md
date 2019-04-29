@@ -13,9 +13,9 @@
 
 This deployment follows Dex by CoreOS & Kubernetes Documentations:
 
-* [Kubernetes OIDC Doc](https://kubernetes.io/docs/admin/authentication/#option-1---oidc-authenticator)
+* [Kubernetes OIDC Doc](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens)
 * [Dex by CoreOS](https://github.com/coreos/dex)
-* [Login App](https://github.com/Flav35/loginapp)
+* [Login App](https://github.com/fydrah/loginapp)
 
 ## Requirements
 
